@@ -16,9 +16,10 @@ function reworkNPM(opts) {
 
     opts.dir = path.resolve(opts.dir || process.cwd());
     opts.root = opts.root || opts.dir;
+    opts.touched = opts.touched || [];
 
     return function(style) {
-        resolveImports({}, opts, style);
+        resolveImports({}, opts, style, opts.touched);
         return style;
     };
 }
@@ -28,11 +29,11 @@ function isNpmImport(path) {
     return !ABS_URL.test(path);
 }
 
-function resolveImports(scope, opts, style) {
+function resolveImports(scope, opts, style, touched) {
     var output = [];
     style.rules.forEach(function(rule) {
         if (rule.type === 'import') {
-            var imported = getImport(scope, opts, rule);
+            var imported = getImport(scope, opts, rule, touched);
             output = output.concat(imported);
         } else {
             output.push(rule);
@@ -64,7 +65,7 @@ function resolveImport(dir, rule) {
     return path.normalize(file);
 }
 
-function getImport(scope, opts, rule) {
+function getImport(scope, opts, rule, touched) {
     var file = resolveImport(opts.dir, rule);
     if (!file) {
         return [rule];
@@ -84,6 +85,8 @@ function getImport(scope, opts, rule) {
                 position: true,
                 source: path.relative(opts.root, file)
             }).stylesheet;
+
+    touched.push(file);
 
     // Resolve imports in the imported file
     resolveImports(scope, importOpts, styles);
