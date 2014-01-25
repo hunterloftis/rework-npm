@@ -42,7 +42,7 @@ function resolveImports(scope, opts, style, touched) {
         if (rule.rules) {
             // Create child scope for blocks (such as @media)
             var childScope = { __parent__: scope };
-            resolveImports(childScope, opts, rule);
+            resolveImports(childScope, opts, rule, touched);
         }
     });
 
@@ -89,7 +89,7 @@ function getImport(scope, opts, rule, touched) {
     touched.push(file);
 
     // Resolve imports in the imported file
-    resolveImports(scope, importOpts, styles);
+    resolveImports(scope, importOpts, styles, touched);
     return styles.rules;
 }
 
